@@ -19,9 +19,16 @@ import { quotingsystem } from '../../api/quotingsystem'
 import { addDays, subDays, subHours } from 'date-fns';
 import { paths } from '../../paths';
 
+import { STORAGE_KEY } from '../../contexts/auth/jwt-context'
+
+const accessToken = globalThis.localStorage.getItem(STORAGE_KEY);
+
 let quotingSystemClient = new quotingsystem(
   {
-    BASE: 'http://localhost:3000'
+    BASE: 'http://localhost:3000',
+    HEADERS: {
+      "Authorization": `Bearer ${accessToken}`
+    }
   }
 )
 
@@ -53,7 +60,7 @@ const useQuotes = (search: any) => {
   const getQuotes = useCallback(async () => {
     try {
 
-      let quotes = await quotingSystemClient.quotes.list()
+      let quotes = await quotingSystemClient.quotes.list(1, 10)
       console.log(quotes)
 
       if (isMounted()) {
@@ -206,8 +213,8 @@ const Quotes = () => {
               {/* <ProcessListSummary /> */}
               <ProcessListTable
                 group={group}
-                quotes={quotes}
-                quotesCount={quotesCount}
+                processes={quotes}
+                processesCount={quotesCount}
                 onPageChange={handlePageChange}
                 onRowsPerPageChange={handleRowsPerPageChange}
                 page={search.page}

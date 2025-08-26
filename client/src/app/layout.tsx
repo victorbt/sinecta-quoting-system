@@ -46,14 +46,10 @@ import { Toaster } from '../components/toaster';
 import { SettingsButton } from '../components/settings-button';
 import { SettingsDrawer } from '../components/settings-drawer';
 
-import { store } from '../store';
+// import { store } from '../store';
 import { createTheme } from '../theme';
 
 import { createEmotionCache } from '../utils/create-emotion-cache';
-
-// import { registerAllModules } from 'handsontable/registry';
-
-// registerAllModules();
 
 // import '@aws-amplify/ui-react/styles.css';
 
@@ -101,8 +97,11 @@ export default function RootLayout(props: any) {
 
     return (
 
+
         <html>
             <body>
+
+
 
                 <CacheProvider value={emotionCache}>
                     <Head>
@@ -117,100 +116,113 @@ export default function RootLayout(props: any) {
 
                     {/* <ReduxProvider store={store}> */}
                     <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <AuthProvider>
-                        <AuthConsumer>
-                            {(auth: any) => (
-                                <SettingsProvider>
-                                    <SettingsConsumer>
-                                        {(settings) => {
-                                            // Prevent theme flicker when restoring custom settings from browser storage
-                                            if (!settings.isInitialized) {
-                                                return null;
-                                            }
+                        <AuthProvider>
 
-                                            const theme: any = createTheme({
-                                                colorPreset: settings.colorPreset,
-                                                contrast: settings.contrast,
-                                                direction: settings.direction,
-                                                paletteMode: settings.paletteMode,
-                                                responsiveFontSizes: settings.responsiveFontSizes
-                                            });
+                            <AuthConsumer>
+                                {(auth) => (
+                                    <SettingsProvider>
+                                        <SettingsConsumer>
+                                            {(settings) => {
+                                                // Prevent theme flicker when restoring custom settings from browser storage
+                                                if (!settings.isInitialized) {
+                                                    return null;
+                                                }
 
-                                            // Prevent guards from redirecting
-                                            const showSlashScreen = false //!auth.isInitialized;
 
-                                            return (
-                                                <ThemeProvider theme={theme}>
-                                                    <Head>
-                                                        <meta
-                                                            name="color-scheme"
-                                                            content={settings.paletteMode}
-                                                        />
-                                                        <meta
-                                                            name="theme-color"
-                                                            content={theme.palette.neutral[900]}
-                                                        />
-                                                    </Head>
-                                                    <RTL direction={settings.direction}>
-                                                        <CssBaseline />
-                                                        <>
-                                                          
-                                                        {/*  */}
-                                                            {(() => {
-                                                                console.log(settings)
-                                                                if (settings.layout === 'horizontal') {
+
+                                                const theme: any = createTheme({
+                                                    colorPreset: settings.colorPreset,
+                                                    contrast: settings.contrast,
+                                                    direction: settings.direction,
+                                                    paletteMode: settings.paletteMode,
+                                                    responsiveFontSizes: settings.responsiveFontSizes
+                                                });
+
+                                                // Prevent guards from redirecting
+                                                const showSlashScreen = false //!auth.isInitialized;
+
+
+
+
+                                                return (
+                                                    <ThemeProvider theme={theme}>
+                                                        <Head>
+                                                            <meta
+                                                                name="color-scheme"
+                                                                content={settings.paletteMode}
+                                                            />
+                                                            <meta
+                                                                name="theme-color"
+                                                                content={theme.palette.neutral[900]}
+                                                            />
+                                                        </Head>
+                                                        <RTL direction={settings.direction}>
+                                                            <CssBaseline />
+                                                            <>
+
+                                                                {(() => {
+
+                                                                    if (!auth.isAuthenticated) {
+                                                                        return (props.children);
+                                                                    }
+
+                                                                    if (settings.layout === 'horizontal') {
+                                                                        return (
+                                                                            <HorizontalLayout
+                                                                                sections={sections}
+                                                                                navColor={settings.navColor}
+                                                                                {...props} />
+                                                                        );
+                                                                    }
+
                                                                     return (
-                                                                        <HorizontalLayout
+                                                                        <VerticalLayout
                                                                             sections={sections}
                                                                             navColor={settings.navColor}
                                                                             {...props} />
                                                                     );
-                                                                }
-
-                                                                return (
-                                                                    <VerticalLayout
-                                                                        sections={sections}
-                                                                        navColor={settings.navColor}
-                                                                        {...props} />
-                                                                );
-                                                            })()}
+                                                                })()}
 
 
 
-                                                            <SettingsButton onClick={settings.handleDrawerOpen} />
-                                                            <SettingsDrawer
-                                                                canReset={settings.isCustom}
-                                                                onClose={settings.handleDrawerClose}
-                                                                onReset={settings.handleReset}
-                                                                onUpdate={settings.handleUpdate}
-                                                                open={settings.openDrawer}
-                                                                values={{
-                                                                    colorPreset: settings.colorPreset,
-                                                                    contrast: settings.contrast,
-                                                                    direction: settings.direction,
-                                                                    paletteMode: settings.paletteMode,
-                                                                    responsiveFontSizes: settings.responsiveFontSizes,
-                                                                    stretch: settings.stretch,
-                                                                    layout: settings.layout,
-                                                                    navColor: settings.navColor
-                                                                }}
-                                                            />
-                                                        </>
+                                                                <SettingsButton onClick={settings.handleDrawerOpen} />
+                                                                <SettingsDrawer
+                                                                    canReset={settings.isCustom}
+                                                                    onClose={settings.handleDrawerClose}
+                                                                    onReset={settings.handleReset}
+                                                                    onUpdate={settings.handleUpdate}
+                                                                    open={settings.openDrawer}
+                                                                    values={{
+                                                                        colorPreset: settings.colorPreset,
+                                                                        contrast: settings.contrast,
+                                                                        direction: settings.direction,
+                                                                        paletteMode: settings.paletteMode,
+                                                                        responsiveFontSizes: settings.responsiveFontSizes,
+                                                                        stretch: settings.stretch,
+                                                                        layout: settings.layout,
+                                                                        navColor: settings.navColor
+                                                                    }}
+                                                                />
+                                                            </>
 
-                                                        <Toaster />
-                                                    </RTL>
-                                                </ThemeProvider>
-                                            );
-                                        }}
-                                    </SettingsConsumer>
-                                </SettingsProvider>
-                            )}
-                        </AuthConsumer>
-                    </AuthProvider>
+                                                            <Toaster />
+                                                        </RTL>
+                                                    </ThemeProvider>
+                                                );
+                                            }}
+                                        </SettingsConsumer>
+                                    </SettingsProvider>
+                                )}
+
+                            </AuthConsumer>
+                        </AuthProvider>
                     </LocalizationProvider>
                     {/* </ReduxProvider> */}
 
                 </CacheProvider >
+
+
+
 
             </body>
         </html>

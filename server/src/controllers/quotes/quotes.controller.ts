@@ -63,7 +63,7 @@ export class QuotesController extends Controller {
   }
 
   @Delete('{id}')
-  @Security('jwt',['ADMIN'])
+  @Security('jwt', ['ADMIN'])
   public async delete(@Path() id: number) {
     try {
       await this.svc.delete(Number(id));

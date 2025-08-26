@@ -3,9 +3,9 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 
 export const corsMiddleware = () => {
-  const origins = (process.env.ALLOWED_ORIGINS || '').split(',').filter(Boolean);
+  const origins = (process.env.ALLOWED_ORIGINS || '*').split(',').filter(Boolean);
   return cors({
-    origin: (origin:any, cb:any) => {
+    origin: (origin: any, cb: any) => {
       if (!origin || origins.includes(origin)) return cb(null, true);
       cb(new Error('Not allowed by CORS'));
     },

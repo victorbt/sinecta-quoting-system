@@ -1,6 +1,12 @@
+'use client'
 
 import { redirect } from 'next/navigation';
+import { withJwtAuthenticator } from '../components/auth/with-authenticator';
 
-export default function Home() {
+const Home=() =>{    
     redirect('/processes')
 }
+
+export default withJwtAuthenticator(Home, {
+   
+})

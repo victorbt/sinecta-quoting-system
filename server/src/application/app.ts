@@ -5,9 +5,6 @@ import bodyParser from 'body-parser';
 import swaggerUI from "swagger-ui-express";
 import swaggerDocument from '../../docs/swagger.json';
 import { RegisterRoutes } from "../routes/routes";
-// import { errorHandler } from "../handlers/error.handler"
-
-// import { connectToDatabase } from "../database/mongo.service";
 
 import { httpLogger } from '../transport/logger';
 import { corsMiddleware, helmetMiddleware, rateLimitMiddleware } from '../transport/security';
@@ -50,11 +47,12 @@ export class ServerApp {
 
     private async createExpressApi() {
         // Express Configs
+        this.app.use(corsMiddleware());
         this.app.use(express.json({ limit: '2mb' }));
         this.app.use(bodyParser.json({ limit: '50mb', type: 'application/json' }));
         this.app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
         this.app.use(helmetMiddleware());
-        this.app.use(corsMiddleware());
+
         this.app.use(rateLimitMiddleware);
         this.app.use(httpLogger);
 

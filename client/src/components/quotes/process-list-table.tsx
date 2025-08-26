@@ -22,8 +22,10 @@ import { paths } from '../../paths';
 // import { SeverityPill } from '../../../components/severity-pill';
 
 const groupProcesses = (processes: any) => {
+  console.log(processes)
   return processes.reduce((acc: any, process: any) => {
     console.log(process)
+    process.status = 'valid'
     //const {  } = process;
 
     let status = 'valid'
