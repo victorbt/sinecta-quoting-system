@@ -1,0 +1,72 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // directUrl = env("DIRECT_DATABASE_URL") 
+}
+
+enum Role {
+  ADMIN
+  SELLER
+}
+
+enum Crop {
+  MAIZ
+  TRIGO
+  SORGO
+  CAFE
+  AGAVE
+}
+
+enum MxState {
+  JALISCO
+  MICHOACAN
+  SINALOA
+  CHIHUAHUA
+  SONORA
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         Role     @default(SELLER)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  quotes Quote[]
+
+  @@index([email])
+  @@map("users")
+}
+
+model Quote {
+  id            Int      @id @default(autoincrement())
+  clientName    String
+  crop          Crop
+  state         MxState
+  areaHa        Decimal  @db.Decimal(12, 2)
+  insuredAmount Decimal  @db.Decimal(18, 2)
+  validFrom     DateTime
+  validTo       DateTime
+  polygon       Json
+  ownerId       Int
+  owner         User     @relation(fields: [ownerId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([crop, state])
+  @@index([ownerId])
+}

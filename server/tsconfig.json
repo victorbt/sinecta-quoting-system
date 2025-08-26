@@ -1,0 +1,55 @@
+{
+    "compilerOptions": {
+        "incremental": true,
+        "target": "es2021",
+        "module": "commonjs",
+        "outDir": "./build",
+        "strict": true,
+        "noImplicitAny": true,
+        "strictNullChecks": true,
+        "strictFunctionTypes": true,
+        "strictBindCallApply": true,
+        "strictPropertyInitialization": false,
+        "noImplicitThis": true,
+        "alwaysStrict": true,
+        "noUnusedLocals": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+        "moduleResolution": "node",
+        "baseUrl": ".",
+        "esModuleInterop": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "forceConsistentCasingInFileNames": true,
+        "skipLibCheck": true,
+        "resolveJsonModule": true,
+        "sourceMap": true,
+        "allowSyntheticDefaultImports": true,
+        "removeComments": true,
+        "paths": {
+            "@infrastructure/*": [
+                "src/infrastructure/*"
+            ],
+            "@application/*": [
+                "src/application/*"
+            ],
+            "@config/*": [
+                "src/application/config/*"
+            ],
+            "@database/*": [
+                "src/database/*"
+            ]
+        }
+    },
+    "include": [
+        "src",
+        "src/types/express/index.d.ts",
+        "prisma/seed.ts",
+        "types/global.d.ts",
+        "tests"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
+}

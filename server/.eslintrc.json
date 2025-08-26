@@ -1,0 +1,22 @@
+{
+  "root": true,
+  "extends": [
+    "standard-with-typescript"
+  ],
+  "parserOptions": {
+    "project": [
+      "./tsconfig.json"
+    ]
+  },
+  "rules": {
+    "@typescript-eslint/strict-boolean-expressions": "off",
+    "@typescript-eslint/no-misused-promises": "off",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/restrict-template-expressions": "off"
+  },
+  "ignorePatterns": [
+    "dist",
+    "src/routes/routes.ts",
+    "src/swagger/swagger.json"
+  ]
+}
