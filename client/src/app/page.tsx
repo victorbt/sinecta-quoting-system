@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { withJwtAuthenticator } from '../components/auth/with-authenticator';
 
 const Home=() =>{    
-    redirect('/processes')
+    redirect('/quotes')
 }
 
 export default withJwtAuthenticator(Home, {

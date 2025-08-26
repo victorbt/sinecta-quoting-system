@@ -7,8 +7,6 @@ import PlusIcon from '@untitled-ui/icons-react/build/esm/Plus';
 import { Box, Button, Divider, Stack, SvgIcon, Typography, useMediaQuery } from '@mui/material';
 // import { quotesApi } from '../../../api/quotes';
 import { useMounted } from '../../hooks/use-mounted';
-// import { usePageView } from '../../hooks/use-page-view';
-// import { Layout as DashboardLayout } from '../../layouts/dashboard';
 import { ProcessListContainer } from '../../components/quotes/process-list-container';
 import { ProcessListSidebar } from '../../components/quotes/process-list-sidebar';
 // import { ProcessListSummary } from '../../components/quotes/process-list-summary';
@@ -41,7 +39,7 @@ const useSearch = () => {
       startDate: undefined
     },
     page: 0,
-    rowsPerPage: 5
+    rowsPerPage: 10
   });
 
   return {
@@ -51,6 +49,7 @@ const useSearch = () => {
 }
 
 const useQuotes = (search: any) => {
+  console.log(search)
   const isMounted = useMounted();
   const [state, setState] = useState({
     quotes: [],
@@ -59,10 +58,7 @@ const useQuotes = (search: any) => {
 
   const getQuotes = useCallback(async () => {
     try {
-
-      let quotes = await quotingSystemClient.quotes.list(1, 10)
-      console.log(quotes)
-
+      let quotes = await quotingSystemClient.quotes.list(search.page + 1, search.rowsPerPage)
       if (isMounted()) {
         setState({
           quotes: quotes.data as any,
@@ -229,143 +225,3 @@ const Quotes = () => {
 };
 
 export default Quotes;
-
-
-const now = new Date();
-
-const quotesExamples = [
-  {
-    id: '5ecb868d0f437390ef3ac62c',
-    name: 'shsjdhsj',
-    currency: '$',
-    customer: {
-      email: 'contact@acme.com',
-      name: 'ACME SRL'
-    },
-    dueDate: addDays(now, 5).getTime(),
-    issueDate: subHours(now, 1).getTime(),
-    number: 'Buen Fin',
-    status: 'complete',
-    totalAmount: 23
-  },
-  {
-    id: '59d78b0b0e15394130c373ff',
-    currency: '$',
-    customer: {
-      email: 'sales@blind-spots.com',
-      name: 'Blind Spots Inc.'
-    },
-    dueDate: addDays(now, 6).getTime(),
-    issueDate: subHours(now, 1).getTime(),
-    number: 'Buen Fin',
-    status: 'complete',
-    totalAmount: 50
-  },
-  {
-    id: '2a05e7f757c35fe823da3c5a',
-    currency: '$',
-    customer: {
-      email: 'sales@beauty-clinic.com',
-      name: 'Beauty Clinic SRL'
-    },
-    dueDate: addDays(now, 9).getTime(),
-    issueDate: subHours(now, 1).getTime(),
-    number: 'Promos ',
-    status: 'complete',
-    totalAmount: 20
-  },
-  {
-    id: '5ecb868ada8deedee0638502',
-    currency: '$',
-    customer: {
-      email: 'sales@matt-jason.com',
-      name: 'Matt Jason'
-    },
-    dueDate: addDays(now, 25).getTime(),
-    issueDate: subDays(subHours(now, 5), 2).getTime(),
-    number: 'JBL',
-    status: 'pending',
-    totalAmount: 12
-  },
-  {
-    id: '750f519b8bc4d21af9528437',
-    currency: '$',
-    customer: {
-      email: 'sales@matt-jason.com',
-      name: 'Matt Jason'
-    },
-    dueDate: addDays(now, 17).getTime(),
-    issueDate: subDays(subHours(now, 4), 2).getTime(),
-    number: 'Promos Harman',
-    status: 'pending',
-    totalAmount: 35
-  },
-  {
-    id: '5ecb868700aba84d0f1c0e48',
-    currency: '$',
-    customer: {
-      email: 'support@terrythomas.io',
-      name: 'Terry Thomas'
-    },
-    dueDate: addDays(now, 11).getTime(),
-    issueDate: subDays(subHours(now, 4), 6).getTime(),
-    number: 'Week',
-    status: 'canceled',
-    totalAmount: 78
-  },
-  {
-    id: '5ecb8682038e1rl239438dks1',
-    currency: '$',
-    customer: {
-      email: 'contact@dispatcher.co.uk',
-      name: 'Dispatcher Inc.'
-    },
-    dueDate: addDays(now, 3).getTime(),
-    issueDate: subDays(subHours(now, 2), 15).getTime(),
-    number: 'Promos Technics',
-    status: 'complete',
-    totalAmount: 44
-  },
-  {
-    id: '5ecb8682038e1ddf4e868764',
-    currency: '$',
-    customer: {
-      email: 'info@novelty.co.uk',
-      name: 'Novelty I.S'
-    },
-    dueDate: addDays(now, 1).getTime(),
-    issueDate: subDays(subHours(now, 2), 15).getTime(),
-    number: 'AKG Promo',
-    status: 'canceled',
-    totalAmount: 23
-  }
-];
-
-const process = {
-  id: '5ecb86785312dcc69b5799ad',
-  currency: '$',
-  customer: {
-    address: '271 Richmond Rd, Grey Lynn, Auckland 1022, New Zealand',
-    company: 'Countdown Grey Lynn',
-    email: 'contact@acme.com',
-    name: 'ACME SRL',
-    taxId: '6934656584231'
-  },
-  dueDate: addDays(now, 5).getTime(),
-  issueDate: subHours(now, 1).getTime(),
-  items: [
-    {
-      id: '5ecb8694db1760a701dfbf74',
-      currency: '$',
-      description: 'Freelancer Subscription (12/05/2019 - 11/06/2019)',
-      quantity: 1,
-      totalAmount: 55.50,
-      unitAmount: 55.50
-    }
-  ],
-  number: 'Black Friday',
-  status: 'complete',
-  subtotalAmount: 50.00,
-  taxAmount: 5.50,
-  totalAmount: 55.50
-};

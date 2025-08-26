@@ -50,13 +50,21 @@ const ProcessRow = (props: any) => {
 
   const statusColor = statusColorsMap[process.status];
   const totalAmount = numeral(process.totalAmount).format('0,0.00');
-  const issueDate = process.issueDate && format(process.issueDate, 'dd/MM/yyyy');
-  const dueDate = process.dueDate && format(process.dueDate, 'dd/MM/yyyy');
+  const issueDate = process.createdAt && format(process.createdAt, 'dd/MM/yyyy');
+  const dueDate = process.validTo && format(process.validTo, 'dd/MM/yyyy');
 
   return (
     <TableRow
       sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
       {...other}>
+         <TableCell width="5%">
+        <Typography
+              color="text.primary"
+              variant="h6"
+            >
+              #{process.id}
+            </Typography>
+      </TableCell>
       <TableCell width="25%">
         <Stack
           alignItems="center"
@@ -70,35 +78,35 @@ const ProcessRow = (props: any) => {
             whiteSpace: 'nowrap'
           }}
         >
-          {/* <Avatar
-            sx={{
-              height: 42,
-              width: 42
-            }}
-          >
-             {getInitials(process.customer.name)} 
-          </Avatar> */}
           <div>
             <Typography
               color="text.primary"
               variant="h6"
             >
-              {process.name}
+              {process.clientName}
             </Typography>
-            {/* <Typography
+            <Typography
               color="text.secondary"
               variant="body2"
             >
-              {process.customer.name}
-            </Typography> */}
+              {process.state}
+            </Typography>
           </div>
         </Stack>
       </TableCell>
       <TableCell>
-        <Typography variant="subtitle2">
-          {/* {process.currency} */}
-          {totalAmount} Updated Products
-        </Typography>
+        <Typography
+              color="text.subtitle2"
+              variant="subtitle2"
+            >
+              {process.crop}
+            </Typography>
+            <Typography
+              color="text.secondary"
+              variant="body2"
+            >
+              {process.areaHa}
+            </Typography>
       </TableCell>
       <TableCell>
         <Typography variant="subtitle2">
@@ -113,7 +121,7 @@ const ProcessRow = (props: any) => {
       </TableCell>
       <TableCell>
         <Typography variant="subtitle2">
-          Complete
+          DueDate
         </Typography>
         <Typography
           color="text.secondary"
@@ -122,11 +130,11 @@ const ProcessRow = (props: any) => {
           {dueDate}
         </Typography>
       </TableCell>
-      <TableCell align="right">
-        {/* <SeverityPill color={statusColor}>
+      {/* <TableCell align="right">
+        <SeverityPill color={statusColor}>
           {process.status}
-        </SeverityPill> */}
-      </TableCell>
+        </SeverityPill>
+      </TableCell> */}
       <TableCell align="right">
         <IconButton
           component={NextLink}

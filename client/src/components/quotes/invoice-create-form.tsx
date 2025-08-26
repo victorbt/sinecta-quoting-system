@@ -19,89 +19,46 @@ import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
-// import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { PlusCircleIcon } from '@phosphor-icons/react/dist/ssr/PlusCircle';
 import { TrashIcon } from '@phosphor-icons/react/dist/ssr/Trash';
 import { Controller, useForm } from 'react-hook-form';
 import { z as zod } from 'zod';
 
 import { paths } from '../../paths';
-// import { dayjs } from '../../libs/dayjs';
+import { dayjs } from '../../libs/dayjs';
 // import { logger } from '@/lib/default-logger';
 import { Option } from '../core/option';
 import { toast } from '../toaster';
 
-import { quotingsystem } from '../../api/quotingsystem'
-
-interface LineItem {
-  id: string;
-  description: string;
-  service: string;
-  quantity: number;
-  unitPrice: number;
-}
-
-function calculateSubtotal(lineItems: LineItem[]): number {
-  const subtotal = lineItems.reduce((acc, lineItem) => acc + lineItem.quantity * lineItem.unitPrice, 0);
-  return parseFloat(subtotal.toFixed(2));
-}
-
-function calculateTotalWithoutTaxes(subtotal: number, discount: number, shippingRate: number): number {
-  return subtotal - discount + shippingRate;
-}
-
-function calculateTax(totalWithoutTax: number, taxRate: number): number {
-  const tax = totalWithoutTax * (taxRate / 100);
-  return parseFloat(tax.toFixed(2));
-}
-
-function calculateTotal(totalWithoutTax: number, taxes: number): number {
-  return totalWithoutTax + taxes;
-}
+import { quotingsystem, _36_Enums_Crop, _36_Enums_MxState } from '../../api/quotingsystem'
 
 const schema = zod
   .object({
-    name: zod.string(),
-    // issueDate: zod.date(),
-    // dueDate: zod.date(),
-    // customer: zod.string().min(1, 'Customer is required').max(255),
-    // taxId: zod.string().max(255).optional(),
-    // lineItems: zod.array(
-    //   zod.object({
-    //     id: zod.string(),
-    //     description: zod.string().min(1, 'Description is required').max(255),
-    //     service: zod.string().min(1, 'Service is required').max(255),
-    //     quantity: zod.number().min(1, 'Quantity must be greater than or equal to 1'),
-    //     unitPrice: zod.number().min(0, 'Unit price must be greater than or equal to 0'),
-    //   })
-    // ),
-    // discount: zod
-    //   .number()
-    //   .min(0, 'Discount must be greater than or equal to 0')
-    //   .max(100, 'Discount must be less than or equal to 100'),
-    // shippingRate: zod.number().min(0, 'Shipping rate must be greater than or equal to 0'),
-    // taxRate: zod
-    //   .number()
-    //   .min(0, 'Tax rate must be greater than or equal to 0')
-    //   .max(100, 'Tax rate must be less than or equal to 100'),
+    clientName: zod.string().min(1, 'Customer is required').max(255),
+    validFrom: zod.date(),
+    validTo: zod.date(),
+    crop: zod.enum(_36_Enums_Crop),
+    state: zod.enum(_36_Enums_MxState),
+    insuredAmount: zod
+      .number()
+      .min(0, 'Discount must be greater than or equal to 0')
+      .max(100, 'Discount must be less than or equal to 100'),
   })
-// .refine((data) => data.issueDate < data.dueDate, {
-//   message: 'Due date should be greater than issue date',
-//   path: ['dueDate'],
-// });
+  .refine((data) => data.validFrom < data.validTo, {
+    message: 'Due date should be greater than issue date',
+    path: ['dueDate'],
+  });
 
 type Values = zod.infer<typeof schema>;
 
 const defaultValues = {
-  name: '',
-  // issueDate: new Date(),
-  // dueDate: dayjs().add(1, 'month').toDate(),
-  // customer: '',
-  // taxId: '',
-  // lineItems: [{ id: 'LI-001', description: '', service: '', quantity: 1, unitPrice: 0 }],
-  // discount: 0,
-  // shippingRate: 0,
-  // taxRate: 0,
+  clientName: '',
+  crop: _36_Enums_Crop.MAIZ,
+  state: _36_Enums_MxState.JALISCO,
+  insuredAmount: 0,
+  validFrom: new Date(),
+  validTo: new Date(),
 } satisfies Values;
 
 export function InvoiceCreateForm({
@@ -114,8 +71,6 @@ export function InvoiceCreateForm({
       BASE: 'http://localhost:3000'
     }
   )
-
-
 
   const {
     control,
@@ -165,16 +120,6 @@ export function InvoiceCreateForm({
   //   [getValues, setValue]
   // );
 
-  // const lineItems = watch('lineItems');
-  // const discount = watch('discount');
-  // const shippingRate = watch('shippingRate');
-  // const taxRate = watch('taxRate');
-
-  // const subtotal = calculateSubtotal(lineItems);
-  // const totalWithoutTaxes = calculateTotalWithoutTaxes(subtotal, discount, shippingRate);
-  // const tax = calculateTax(totalWithoutTaxes, taxRate);
-  // const total = calculateTotal(totalWithoutTaxes, tax);
-
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Card>
@@ -183,23 +128,10 @@ export function InvoiceCreateForm({
             <Stack spacing={3}>
               <Typography variant="h6">Basic information</Typography>
               <Grid container spacing={3}>
-                {/* <Grid md={6} xs={12}>
+                <Grid size={{ md: 6, xs: 12 }} >
                   <Controller
                     control={control}
-                    name="customer"
-                    render={({ field }) => (
-                      <FormControl error={Boolean(errors.customer)} fullWidth>
-                        <InputLabel>Customer</InputLabel>
-                        <OutlinedInput {...field} />
-                        {errors.customer ? <FormHelperText>{errors.customer.message}</FormHelperText> : null}
-                      </FormControl>
-                    )}
-                  />
-                </Grid> */}
-                <Grid size={{md:6, xs:12}} >
-                  <Controller
-                    control={control}
-                    name="name"
+                    name="clientName"
                     render={({ field }) => (
                       <FormControl fullWidth>
                         <InputLabel>Name</InputLabel>
@@ -208,55 +140,55 @@ export function InvoiceCreateForm({
                     )}
                   />
                 </Grid>
-                <Grid size={{md:6, xs:12}} >
+                <Grid size={{ md: 6, xs: 12 }} >
 
-                  {/* <Controller
+                  <Controller
                     control={control}
-                    name="issueDate"
+                    name="validFrom"
                     render={({ field }) => (
                       <DatePicker
                         {...field}
                         format="MMM D, YYYY"
                         label="Issue date"
                         onChange={(date) => {
-                          field.onChange(date?.toDate());
+                          field.onChange((date as any)?.toDate());
                         }}
                         slotProps={{
                           textField: {
-                            error: Boolean(errors.issueDate),
+                            error: Boolean(errors.validFrom),
                             fullWidth: true,
-                            helperText: errors.issueDate?.message,
+                            helperText: errors.validFrom?.message,
                           },
                         }}
-                        value={dayjs(field.value)}
+                        value={dayjs(field.value).toDate()}
                       />
                     )}
-                  /> */}
+                  />
                 </Grid>
-                {/* <Grid md={6} xs={12}>
+                <Grid size={{ md: 6, xs: 12 }}>
                   <Controller
                     control={control}
-                    name="dueDate"
+                    name="validTo"
                     render={({ field }) => (
                       <DatePicker
                         {...field}
                         format="MMM D, YYYY"
                         label="Due date"
                         onChange={(date) => {
-                          field.onChange(date?.toDate());
+                          field.onChange((date as any)?.toDate());
                         }}
                         slotProps={{
                           textField: {
-                            error: Boolean(errors.dueDate),
+                            error: Boolean(errors.validTo),
                             fullWidth: true,
-                            helperText: errors.dueDate?.message,
+                            helperText: errors.validTo?.message,
                           },
                         }}
-                        value={dayjs(field.value)}
+                        value={dayjs(field.value).toDate()}
                       />
                     )}
-                  /> 
-                </Grid>*/}
+                  />
+                </Grid>
                 {/* <Grid md={6} xs={12}>
                   <Controller
                     control={control}
@@ -272,128 +204,6 @@ export function InvoiceCreateForm({
                 </Grid> */}
               </Grid>
             </Stack>
-            {/* <Stack spacing={3}>
-              <Typography variant="h6">Line items</Typography>
-              <Stack divider={<Divider />} spacing={2}>
-                {lineItems.map((lineItem, index) => (
-                  <Stack direction="row" key={lineItem.id} spacing={3} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
-                    <Controller
-                      control={control}
-                      name={`lineItems.${index}.description`}
-                      render={({ field }) => (
-                        <FormControl
-                          error={Boolean(errors.lineItems?.[index]?.description)}
-                          sx={{ flex: '1 1 auto', minWidth: '200px' }}
-                        >
-                          <InputLabel>Description</InputLabel>
-                          <OutlinedInput {...field} />
-                          {errors.lineItems?.[index]?.description ? (
-                            <FormHelperText>{errors.lineItems[index]!.description!.message}</FormHelperText>
-                          ) : null}
-                        </FormControl>
-                      )}
-                    />
-                    <Controller
-                      control={control}
-                      name={`lineItems.${index}.service`}
-                      render={({ field }) => (
-                        <FormControl
-                          error={Boolean(errors.lineItems?.[index]?.service)}
-                          sx={{ maxWidth: '100%', width: '200px' }}
-                        >
-                          <InputLabel>Service</InputLabel>
-                          <Select {...field}>
-                            <Option value="">Select a service</Option>
-                            <Option value="design">Design</Option>
-                            <Option value="development">Development</Option>
-                          </Select>
-                          {errors.lineItems?.[index]?.service ? (
-                            <FormHelperText>{errors.lineItems[index]!.service!.message}</FormHelperText>
-                          ) : null}
-                        </FormControl>
-                      )}
-                    />
-                    <Controller
-                      control={control}
-                      name={`lineItems.${index}.quantity`}
-                      render={({ field }) => (
-                        <FormControl error={Boolean(errors.lineItems?.[index]?.quantity)} sx={{ width: '140px' }}>
-                          <InputLabel>Quantity</InputLabel>
-                          <OutlinedInput
-                            {...field}
-                            inputProps={{ step: 1 }}
-                            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                              const value = event.target.valueAsNumber;
-
-                              if (isNaN(value)) {
-                                field.onChange('');
-                                return;
-                              }
-
-                              if (value > 100) {
-                                return;
-                              }
-
-                              field.onChange(parseInt(event.target.value));
-                            }}
-                            type="number"
-                          />
-                          {errors.lineItems?.[index]?.quantity ? (
-                            <FormHelperText>{errors.lineItems[index]!.quantity!.message}</FormHelperText>
-                          ) : null}
-                        </FormControl>
-                      )}
-                    />
-                    <Controller
-                      control={control}
-                      name={`lineItems.${index}.unitPrice`}
-                      render={({ field }) => (
-                        <FormControl error={Boolean(errors.lineItems?.[index]?.unitPrice)} sx={{ width: '140px' }}>
-                          <InputLabel>Unit price</InputLabel>
-                          <OutlinedInput
-                            {...field}
-                            inputProps={{ step: 0.01 }}
-                            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                              const value = event.target.valueAsNumber;
-
-                              if (isNaN(value)) {
-                                field.onChange('');
-                                return;
-                              }
-
-                              field.onChange(parseFloat(value.toFixed(2)));
-                            }}
-                            startAdornment={<InputAdornment position="start">$</InputAdornment>}
-                            type="number"
-                          />
-                          {errors.lineItems?.[index]?.unitPrice ? (
-                            <FormHelperText>{errors.lineItems[index]!.unitPrice!.message}</FormHelperText>
-                          ) : null}
-                        </FormControl>
-                      )}
-                    />
-                    <IconButton
-                      onClick={() => {
-                        handleRemoveLineItem(lineItem.id);
-                      }}
-                      sx={{ alignSelf: 'flex-end' }}
-                    >
-                      <TrashIcon />
-                    </IconButton>
-                  </Stack>
-                ))}
-                <div>
-                  <Button
-                    color="secondary"
-                    onClick={handleAddLineItem}
-                    startIcon={<PlusCircleIcon />}
-                    variant="outlined"
-                  >
-                    Add item
-                  </Button>
-                </div>
-              </Stack>
-            </Stack> */}
             {/* <Grid container spacing={3}>
               <Grid md={4} xs={12}>
                 <Controller

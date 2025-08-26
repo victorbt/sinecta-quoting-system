@@ -55,7 +55,7 @@ import { quotingsystem } from '../../../api/quotingsystem'
 
 // export const metadata = { title: `Create | Invoices | Dashboard | ${config.site.name}` } satisfies Metadata;
 
-const steps = ['Basic Details', 'Upload yout file', 'Overview'];
+const steps = ['Basic Details', 'Select Area', 'Overview'];
 
 function bytesToSize(bytes: number, decimals = 2): string {
   if (bytes === 0) {
@@ -386,12 +386,12 @@ export default function Page(): React.JSX.Element {
               <Link
                 color="text.primary"
                 component={RouterLink}
-                href={paths.processes.index}
+                href={paths.quotes.index}
                 sx={{ alignItems: 'center', display: 'inline-flex', gap: 1 }}
                 variant="subtitle2"
               >
                 <ArrowLeftIcon fontSize="var(--icon-fontSize-md)" />
-                Processes List
+                Quotes List
               </Link>
             </div>
             <div>
