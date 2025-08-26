@@ -263,7 +263,7 @@ const quotesExamples = [
     },
     dueDate: addDays(now, 9).getTime(),
     issueDate: subHours(now, 1).getTime(),
-    number: 'Promos Hermes',
+    number: 'Promos ',
     status: 'complete',
     totalAmount: 20
   },
@@ -302,7 +302,7 @@ const quotesExamples = [
     },
     dueDate: addDays(now, 11).getTime(),
     issueDate: subDays(subHours(now, 4), 6).getTime(),
-    number: 'Hermes Week',
+    number: 'Week',
     status: 'canceled',
     totalAmount: 78
   },

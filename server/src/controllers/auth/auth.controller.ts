@@ -2,19 +2,20 @@
 // import { StatusCodes } from 'http-status-codes';
 import { Inject } from 'typescript-ioc';
 import {
-    // Body,
+    Body,
     Controller,
     Route,
     Post,
     Header,
     SuccessResponse,
+    Security,
     // Example,
     Tags
 } from 'tsoa';
 import { z } from 'zod';
 
-// import { IUser } from '../../domain/models';
-// import { User } from '../../database/entities';
+import { IUser } from '../../domain/models';
+import { User } from '../../database/entities';
 // import { UsersService } from '../../services/user';
 
 import { AuthService } from '../../services/auth/auth.service';
@@ -28,7 +29,6 @@ const LoginSchema = z.object({ email: z.string().email(), password: z.string().m
 export class AuthController extends Controller {
     @Inject private svc: AuthService
 
-    
     @Post('/signin')
     @SuccessResponse("200", "OK")
     @Tags('Signin')
@@ -47,12 +47,13 @@ export class AuthController extends Controller {
         return { data: await this.svc.login(parsed.email, parsed.password) }
     }
 
-    // @Post('/signup')
+    // @Post('/create')
     // @SuccessResponse('201', 'Created')
     // @Tags('Signup')
-    // @Example<{ data: IUser }>(
-    //     { data: fakeUsers(1)[0] }
-    // )
+    // @Security('jwt',['ADMIN'])
+    // // @Example<{ data: IUser }>(
+    // //     { data: fakeUsers(1)[0] }
+    // // )
     // public async signup(
     //     @Body() user: Omit<IUser, 'id' | 'createdAt' | 'updatedAt' | 'userType'>,
     // ): Promise<{ data: Omit<User, 'password'> }> {

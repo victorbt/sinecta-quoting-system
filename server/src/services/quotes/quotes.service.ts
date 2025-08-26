@@ -53,4 +53,8 @@ export class QuotesService {
     const recs = await this.repo.find({ where: { id }, take: 1 });
     return recs[0] || null;
   }
+
+    async delete(id: number) {
+    return await this.repo.deleteOne({ where: { id }, take: 1 });
+  }
 }

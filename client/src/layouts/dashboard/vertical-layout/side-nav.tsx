@@ -203,8 +203,8 @@ export const SideNav = (props: any) => {
                     maxHeight: { xs: 48, md: 48 },
                     maxWidth: { xs: 82, md: 82 },
                   }}
-                  alt="Hermes Music Logo"
-                  src='https://tejanomusicawards.com/wp-content/uploads/hermes.png'
+                  alt="Sinecta Logo"
+                  src="https://sinecta.com/wp-content/uploads/2024/03/Sinecta_Logotipo-2-03-p-500-2.png"
                 >
                 </Box>
                 :
@@ -217,8 +217,8 @@ export const SideNav = (props: any) => {
                     maxHeight: { xs: 82, md: 82 },
                     maxWidth: { xs: 75, md: 75 },
                   }}
-                  alt="Hermes Music Logo"
-                  src="https://hermes-music.com.mx/assets/images/Hermes_Music.png"
+                  alt="Sinecta Logo"
+                  src="https://sinecta.com/wp-content/uploads/2024/03/Sinecta_Logotipo-2-03-p-500-2.png"
                 >
                 </Box>
             }

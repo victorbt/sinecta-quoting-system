@@ -1,5 +1,18 @@
 import { Inject } from 'typescript-ioc';
-import { Body, Get, Path, Post, Query, Route, Security, SuccessResponse, Tags, Response, Controller } from 'tsoa';
+import {
+  Body,
+  Get,
+  Path,
+  Post,
+  Delete,
+  Query,
+  Route,
+  Security,
+  SuccessResponse,
+  Tags,
+  Response,
+  Controller
+} from 'tsoa';
 import PDFDocument from 'pdfkit';
 import { stringify } from 'csv-stringify';
 import { CreateQuoteSchema, ListQuerySchema } from '../../domain/schemas/quote';
@@ -47,6 +60,17 @@ export class QuotesController extends Controller {
     const q = await this.svc.get(Number(id));
     if (!q) return { message: 'Not found' };
     return q;
+  }
+
+  @Delete('{id}')
+  @Security('jwt',['ADMIN'])
+  public async delete(@Path() id: number) {
+    try {
+      await this.svc.delete(Number(id));
+    } catch (e: any) {
+      return { message: e.message };
+    }
+    return null;
   }
 
   @Get('export.csv')

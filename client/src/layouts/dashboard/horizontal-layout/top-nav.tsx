@@ -199,8 +199,8 @@ export const TopNav = (props: any) => {
               maxWidth: { xs: 72, md: 72 },
               display: 'inline-flex',
             }}
-            alt="Hermes Music Logo"
-            src="https://hermes-music.com.mx/assets/images/Hermes_Music.png"
+            alt="Sinecta Logo"
+            src="https://sinecta.com/wp-content/uploads/2024/03/Sinecta_Logotipo-2-03-p-500-2.png"
           >
           </Box>
           <TenantSwitch />
