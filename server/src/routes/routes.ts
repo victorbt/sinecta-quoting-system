@@ -46,6 +46,62 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ValidationErrorDetails": {
+        "dataType": "refObject",
+        "properties": {
+        },
+        "additionalProperties": {"dataType":"nestedObjectLiteral","nestedProperties":{"message":{"dataType":"any","required":true}}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Record_string.any_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"any"},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ValidateError": {
+        "dataType": "refObject",
+        "properties": {
+            "name": {"dataType":"string","required":true},
+            "message": {"dataType":"string","default":""},
+            "stack": {"dataType":"string"},
+            "statusCode": {"dataType":"double","default":400},
+            "details": {"dataType":"union","subSchemas":[{"ref":"ValidationErrorDetails"},{"ref":"Record_string.any_"},{"dataType":"undefined"}],"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "IQuote": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"double"},
+            "clientName": {"dataType":"string","required":true},
+            "crop": {"ref":"_36_Enums.Crop","required":true},
+            "state": {"ref":"_36_Enums.MxState","required":true},
+            "areaHa": {"dataType":"double","required":true},
+            "insuredAmount": {"dataType":"double","required":true},
+            "validFrom": {"dataType":"datetime","required":true},
+            "validTo": {"dataType":"datetime","required":true},
+            "polygon": {"dataType":"any","required":true},
+            "ownerId": {"dataType":"double","required":true},
+            "createdAt": {"dataType":"datetime"},
+            "updatedAt": {"dataType":"datetime"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Partial_IQuote_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"id":{"dataType":"double"},"clientName":{"dataType":"string"},"crop":{"ref":"_36_Enums.Crop"},"state":{"ref":"_36_Enums.MxState"},"areaHa":{"dataType":"double"},"insuredAmount":{"dataType":"double"},"validFrom":{"dataType":"datetime"},"validTo":{"dataType":"datetime"},"polygon":{"dataType":"any"},"ownerId":{"dataType":"double"},"createdAt":{"dataType":"datetime"},"updatedAt":{"dataType":"datetime"}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "NodeJS.ReadableStream": {
+        "dataType": "refObject",
+        "properties": {
+            "readable": {"dataType":"boolean","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 };
 const templateService = new ExpressTemplateService(models, {"noImplicitAdditionalProperties":"throw-on-extras","bodyCoercion":true});
 
@@ -64,9 +120,9 @@ export function RegisterRoutes(app: Router) {
 
     
         const argsQuotesController_create: Record<string, TsoaRoute.ParameterSchema> = {
-                body: {"in":"body","name":"body","required":true,"dataType":"any"},
+                body: {"in":"body","name":"body","required":true,"ref":"IQuote"},
         };
-        app.post('/quotes',
+        app.post('/api/v1/quote',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(QuotesController)),
             ...(fetchMiddlewares<RequestHandler>(QuotesController.prototype.create)),
@@ -94,14 +150,49 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsQuotesController_update: Record<string, TsoaRoute.ParameterSchema> = {
+                req: {"in":"request","name":"req","required":true,"dataType":"object"},
+                id: {"in":"path","name":"id","required":true,"dataType":"double"},
+                body: {"in":"body","name":"body","required":true,"ref":"Partial_IQuote_"},
+                badRequestResponse: {"in":"res","name":"400","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"error":{"dataType":"string","required":true}}},
+        };
+        app.put('/api/v1/quote/:id',
+            authenticateMiddleware([{"jwt":["admin"]}]),
+            ...(fetchMiddlewares<RequestHandler>(QuotesController)),
+            ...(fetchMiddlewares<RequestHandler>(QuotesController.prototype.update)),
+
+            async function QuotesController_update(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsQuotesController_update, request, response });
+
+                const controller = new QuotesController();
+
+              await templateService.apiHandler({
+                methodName: 'update',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsQuotesController_list: Record<string, TsoaRoute.ParameterSchema> = {
+                badRequestResponse: {"in":"res","name":"400","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"error":{"dataType":"string","required":true}}},
                 page: {"in":"query","name":"page","dataType":"double"},
                 pageSize: {"in":"query","name":"pageSize","dataType":"double"},
                 crop: {"in":"query","name":"crop","dataType":"string"},
                 state: {"in":"query","name":"state","dataType":"string"},
                 q: {"in":"query","name":"q","dataType":"string"},
         };
-        app.get('/quotes',
+        app.get('/api/v1/quote',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(QuotesController)),
             ...(fetchMiddlewares<RequestHandler>(QuotesController.prototype.list)),
@@ -122,7 +213,7 @@ export function RegisterRoutes(app: Router) {
                 response,
                 next,
                 validatedArgs,
-                successStatus: undefined,
+                successStatus: 201,
               });
             } catch (err) {
                 return next(err);
@@ -131,8 +222,9 @@ export function RegisterRoutes(app: Router) {
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsQuotesController_get: Record<string, TsoaRoute.ParameterSchema> = {
                 id: {"in":"path","name":"id","required":true,"dataType":"double"},
+                badRequestResponse: {"in":"res","name":"400","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"error":{"dataType":"string","required":true}}},
         };
-        app.get('/quotes/:id',
+        app.get('/api/v1/quote/:id',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(QuotesController)),
             ...(fetchMiddlewares<RequestHandler>(QuotesController.prototype.get)),
@@ -153,7 +245,38 @@ export function RegisterRoutes(app: Router) {
                 response,
                 next,
                 validatedArgs,
-                successStatus: undefined,
+                successStatus: 201,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsQuotesController_delete: Record<string, TsoaRoute.ParameterSchema> = {
+                id: {"in":"path","name":"id","required":true,"dataType":"double"},
+        };
+        app.delete('/api/v1/quote/:id',
+            authenticateMiddleware([{"jwt":["ADMIN"]}]),
+            ...(fetchMiddlewares<RequestHandler>(QuotesController)),
+            ...(fetchMiddlewares<RequestHandler>(QuotesController.prototype.delete)),
+
+            async function QuotesController_delete(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsQuotesController_delete, request, response });
+
+                const controller = new QuotesController();
+
+              await templateService.apiHandler({
+                methodName: 'delete',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 201,
               });
             } catch (err) {
                 return next(err);
@@ -161,8 +284,9 @@ export function RegisterRoutes(app: Router) {
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsQuotesController_exportCSV: Record<string, TsoaRoute.ParameterSchema> = {
+                req: {"in":"request","name":"req","required":true,"dataType":"object"},
         };
-        app.get('/quotes/export.csv',
+        app.get('/api/v1/quote/export/csv',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(QuotesController)),
             ...(fetchMiddlewares<RequestHandler>(QuotesController.prototype.exportCSV)),
@@ -191,8 +315,9 @@ export function RegisterRoutes(app: Router) {
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsQuotesController_exportPDF: Record<string, TsoaRoute.ParameterSchema> = {
+                req: {"in":"request","name":"req","required":true,"dataType":"object"},
         };
-        app.get('/quotes/export.pdf',
+        app.get('/api/v1/quote/export/pdf',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(QuotesController)),
             ...(fetchMiddlewares<RequestHandler>(QuotesController.prototype.exportPDF)),

@@ -15,6 +15,7 @@
   "scripts": {
     "dev": "nodemon",
     "build": "npm run tsoa:routes && npm run tsoa:spec && tsc -P tsconfig.json ",
+    "tsoa": "npm run tsoa:routes && npm run tsoa:spec",
     "start": "ts-node ./src/main.ts",
     "tsoa:routes": "tsoa routes",
     "tsoa:spec": "tsoa spec",

@@ -34,6 +34,18 @@ export class QuotesService {
     } as any);
   }
 
+  async udpate(id: number, payload: any): Promise<Quote> {
+    if (payload.polygon) {
+      const areaHa = this.computeAreaHa(payload.polygon);
+      if (areaHa < 1 || areaHa > 1000) throw new DomainError('QUOTE_AREA_RANGE', 'Área fuera de rango (1 a 1000 ha)');
+      if (areaHa > 500) console.log(`[notify] large area: ${areaHa.toFixed(2)} ha`);
+    }
+
+    let quote = await this.repo.find({ where: { id }, take: 1 });
+
+    return this.repo.updateOne(id, quote[0]);
+  }
+
   async list(params: { page: number; pageSize: number; crop?: string; state?: string; q?: string }) {
     const where: any = {};
     if (params.crop) where.crop = params.crop;
@@ -54,7 +66,7 @@ export class QuotesService {
     return recs[0] || null;
   }
 
-    async delete(id: number) {
+  async delete(id: number) {
     return await this.repo.deleteOne({ where: { id }, take: 1 });
   }
 }

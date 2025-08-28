@@ -204,7 +204,7 @@ export const SideNav = (props: any) => {
                     maxWidth: { xs: 82, md: 82 },
                   }}
                   alt="Sinecta Logo"
-                  src="https://sinecta.com/wp-content/uploads/2024/03/Sinecta_Logotipo-2-03-p-500-2.png"
+                  src="https://framerusercontent.com/images/WXOg5wQslF7TTzQ43AIkbcS2Y.png"
                 >
                 </Box>
                 :
@@ -218,7 +218,7 @@ export const SideNav = (props: any) => {
                     maxWidth: { xs: 75, md: 75 },
                   }}
                   alt="Sinecta Logo"
-                  src="https://sinecta.com/wp-content/uploads/2024/03/Sinecta_Logotipo-2-03-p-500-2.png"
+                  src="https://framerusercontent.com/images/WXOg5wQslF7TTzQ43AIkbcS2Y.png"
                 >
                 </Box>
             }

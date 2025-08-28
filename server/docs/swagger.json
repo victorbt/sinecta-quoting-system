@@ -85,6 +85,180 @@
 				],
 				"type": "object",
 				"additionalProperties": false
+			},
+			"ValidationErrorDetails": {
+				"properties": {},
+				"type": "object",
+				"additionalProperties": {
+					"properties": {
+						"message": {}
+					},
+					"required": [
+						"message"
+					],
+					"type": "object"
+				}
+			},
+			"Record_string.any_": {
+				"properties": {},
+				"additionalProperties": {},
+				"type": "object",
+				"description": "Construct a type with a set of properties K of type T"
+			},
+			"ValidateError": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string",
+						"default": ""
+					},
+					"stack": {
+						"type": "string"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double",
+						"default": 400
+					},
+					"details": {
+						"anyOf": [
+							{
+								"$ref": "#/components/schemas/ValidationErrorDetails"
+							},
+							{
+								"$ref": "#/components/schemas/Record_string.any_"
+							}
+						]
+					}
+				},
+				"required": [
+					"name",
+					"message",
+					"statusCode"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IQuote": {
+				"properties": {
+					"id": {
+						"type": "number",
+						"format": "double"
+					},
+					"clientName": {
+						"type": "string"
+					},
+					"crop": {
+						"$ref": "#/components/schemas/_36_Enums.Crop"
+					},
+					"state": {
+						"$ref": "#/components/schemas/_36_Enums.MxState"
+					},
+					"areaHa": {
+						"type": "number",
+						"format": "double"
+					},
+					"insuredAmount": {
+						"type": "number",
+						"format": "double"
+					},
+					"validFrom": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"validTo": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"polygon": {},
+					"ownerId": {
+						"type": "number",
+						"format": "double"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				},
+				"required": [
+					"clientName",
+					"crop",
+					"state",
+					"areaHa",
+					"insuredAmount",
+					"validFrom",
+					"validTo",
+					"polygon",
+					"ownerId"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Partial_IQuote_": {
+				"properties": {
+					"id": {
+						"type": "number",
+						"format": "double"
+					},
+					"clientName": {
+						"type": "string"
+					},
+					"crop": {
+						"$ref": "#/components/schemas/_36_Enums.Crop"
+					},
+					"state": {
+						"$ref": "#/components/schemas/_36_Enums.MxState"
+					},
+					"areaHa": {
+						"type": "number",
+						"format": "double"
+					},
+					"insuredAmount": {
+						"type": "number",
+						"format": "double"
+					},
+					"validFrom": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"validTo": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"polygon": {},
+					"ownerId": {
+						"type": "number",
+						"format": "double"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				},
+				"type": "object",
+				"description": "Make all properties in T optional"
+			},
+			"NodeJS.ReadableStream": {
+				"properties": {
+					"readable": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"readable"
+				],
+				"type": "object",
+				"additionalProperties": false
 			}
 		},
 		"securitySchemes": {}
@@ -101,7 +275,7 @@
 		}
 	},
 	"paths": {
-		"/quotes": {
+		"/api/v1/quote": {
 			"post": {
 				"operationId": "Create",
 				"responses": {
@@ -115,30 +289,53 @@
 							}
 						}
 					},
-					"422": {
-						"description": "Validation error",
+					"401": {
+						"description": "Unauthorized",
 						"content": {
 							"application/json": {
 								"schema": {
-									"properties": {
-										"message": {
-											"type": "string"
-										},
-										"code": {
-											"type": "string"
+									"$ref": "#/components/schemas/ValidateError"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"name": "Unauthorized",
+											"message": "Validation failed",
+											"statusCode": 401,
+											"details": {}
 										}
-									},
-									"required": [
-										"message",
-										"code"
-									],
-									"type": "object"
+									}
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Failed",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ValidateError"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"message": "Validation failed",
+											"name": "Quote Schema Validation Failed",
+											"statusCode": 422,
+											"details": {
+												"body.$0.name": {
+													"message": "'clientName' is required"
+												}
+											}
+										}
+									}
 								}
 							}
 						}
 					}
 				},
 				"tags": [
+					"Post",
 					"Quotes"
 				],
 				"security": [
@@ -151,7 +348,9 @@
 					"required": true,
 					"content": {
 						"application/json": {
-							"schema": {}
+							"schema": {
+								"$ref": "#/components/schemas/IQuote"
+							}
 						}
 					}
 				}
@@ -159,44 +358,55 @@
 			"get": {
 				"operationId": "List",
 				"responses": {
-					"200": {
-						"description": "Ok",
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					},
+					"400": {
+						"description": "",
 						"content": {
 							"application/json": {
 								"schema": {
 									"properties": {
-										"data": {
-											"items": {
-												"$ref": "#/components/schemas/Quote"
-											},
-											"type": "array"
-										},
-										"pageSize": {
-											"type": "number",
-											"format": "double"
-										},
-										"page": {
-											"type": "number",
-											"format": "double"
-										},
-										"total": {
-											"type": "number",
-											"format": "double"
+										"error": {
+											"type": "string"
 										}
 									},
 									"required": [
-										"data",
-										"pageSize",
-										"page",
-										"total"
+										"error"
 									],
 									"type": "object"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ValidateError"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"name": "Unauthorized",
+											"message": "Validation failed",
+											"statusCode": 401,
+											"details": {}
+										}
+									}
 								}
 							}
 						}
 					}
 				},
 				"tags": [
+					"Get",
 					"Quotes"
 				],
 				"security": [
@@ -250,37 +460,141 @@
 				]
 			}
 		},
-		"/quotes/{id}": {
-			"get": {
-				"operationId": "Get",
+		"/api/v1/quote/{id}": {
+			"put": {
+				"operationId": "Update",
 				"responses": {
 					"200": {
 						"description": "Ok",
 						"content": {
 							"application/json": {
+								"schema": {}
+							}
+						}
+					},
+					"400": {
+						"description": "",
+						"content": {
+							"application/json": {
 								"schema": {
-									"anyOf": [
-										{
-											"$ref": "#/components/schemas/Quote"
-										},
-										{
-											"properties": {
-												"message": {
-													"type": "string"
-												}
-											},
-											"required": [
-												"message"
-											],
-											"type": "object"
+									"properties": {
+										"error": {
+											"type": "string"
 										}
-									]
+									},
+									"required": [
+										"error"
+									],
+									"type": "object"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ValidateError"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"name": "Unauthorized",
+											"message": "Validation failed",
+											"statusCode": 401,
+											"details": {}
+										}
+									}
 								}
 							}
 						}
 					}
 				},
 				"tags": [
+					"Quotes"
+				],
+				"security": [
+					{
+						"jwt": [
+							"admin"
+						]
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Partial_IQuote_"
+							}
+						}
+					}
+				}
+			},
+			"get": {
+				"operationId": "Get",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					},
+					"400": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"error": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"error"
+									],
+									"type": "object"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ValidateError"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"name": "Unauthorized",
+											"message": "Validation failed",
+											"statusCode": 401,
+											"details": {}
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Get",
 					"Quotes"
 				],
 				"security": [
@@ -299,9 +613,71 @@
 						}
 					}
 				]
+			},
+			"delete": {
+				"operationId": "Delete",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"message": {}
+									},
+									"required": [
+										"message"
+									],
+									"type": "object"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ValidateError"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"name": "Unauthorized",
+											"message": "Validation failed",
+											"statusCode": 401,
+											"details": {}
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Quotes"
+				],
+				"security": [
+					{
+						"jwt": [
+							"ADMIN"
+						]
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
 			}
 		},
-		"/quotes/export.csv": {
+		"/api/v1/quote/export/csv": {
 			"get": {
 				"operationId": "ExportCSV",
 				"responses": {
@@ -320,12 +696,19 @@
 				"parameters": []
 			}
 		},
-		"/quotes/export.pdf": {
+		"/api/v1/quote/export/pdf": {
 			"get": {
 				"operationId": "ExportPDF",
 				"responses": {
-					"204": {
-						"description": "No content"
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NodeJS.ReadableStream"
+								}
+							}
+						}
 					}
 				},
 				"tags": [

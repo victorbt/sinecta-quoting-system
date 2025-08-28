@@ -1,62 +1,147 @@
+import { Request as expressReq, Response as expressRes } from "express";
 import { Inject } from 'typescript-ioc';
+import { StatusCodes } from 'http-status-codes';
 import {
+  Request,
   Body,
   Get,
   Path,
   Post,
+  Put,
   Delete,
   Query,
   Route,
   Security,
   SuccessResponse,
   Tags,
+  Res,
   Response,
+  TsoaResponse,
   Controller
 } from 'tsoa';
+
+import { IQuote } from '../../domain/models';
+
 import PDFDocument from 'pdfkit';
 import { stringify } from 'csv-stringify';
 import { CreateQuoteSchema, ListQuerySchema } from '../../domain/schemas/quote';
 import { QuotesService } from '../../services/quotes/quotes.service';
-import type { Response as ExResponse } from 'express';
+import { ValidateError } from '../../errors/validate.error';
+import { PassThrough } from "stream";
 
 const sanitizeCsvCell = (val: any) => {
   const s = String(val ?? '');
   return /^[=+\-@]/.test(s) ? `'${s}` : s;
 };
 
-@Route('quotes')
+@Route('/api/v1/quote')
 @Tags('Quotes')
 export class QuotesController extends Controller {
   @Inject private svc: QuotesService
 
-  @Post()
+  @Post('/')
+  @Tags('Post')
   @Security('jwt')
   @SuccessResponse(201, 'Created')
-  @Response<{ code: string, message: string }>(422, 'Validation error')
-  public async create(@Body() body: unknown) {
+  @Response<ValidateError>("401", "Unauthorized", {
+    name: "Unauthorized",
+    message: "Validation failed",
+    statusCode: 401,
+    details: {},
+  })
+  @Response<ValidateError>("422", "Validation Failed", {
+    message: "Validation failed",
+    name: "Quote Schema Validation Failed",
+    statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
+    details: {
+      "body.$0.name": {
+        "message": "'clientName' is required"
+      },
+    }
+  })
+  public async create(
+    @Body() body: IQuote
+  ) {
+    this.setStatus(StatusCodes.CREATED);
     const parsed = CreateQuoteSchema.parse(body);
+    console.log(parsed)
     // @ts-ignore
-    const ownerId = (this as any).request.user.sub;
+    const ownerId = (this as any).request.user.id;
     const created = await this.svc.create(ownerId, parsed);
     return created;
   }
 
-  @Get()
+  @Put('/{id}')
+  @Security('jwt', ['admin'])
+  @Response<ValidateError>("401", "Unauthorized", {
+    name: "Unauthorized",
+    message: "Validation failed",
+    statusCode: 401,
+    details: {},
+  })
+  public async update(
+    @Request() req: expressReq,
+    @Path() id: number,
+    @Body() body: Partial<IQuote>,
+    @Res() badRequestResponse: TsoaResponse<StatusCodes.BAD_REQUEST, { error: string }>,
+  ): Promise<any> {
+    if (id < 0) {
+      return badRequestResponse(StatusCodes.BAD_REQUEST, { error: "invalid parkingLot ID: must be greater than 0" })
+    }
+    const parsed = CreateQuoteSchema.parse(body);
+
+    const updated = await this.svc.udpate(id, parsed);
+    return updated;
+  }
+
+
+  @Get('/')
+  @Tags('Get')
   @Security('jwt')
+  @SuccessResponse(201, 'Created')
+  @Response<ValidateError>("401", "Unauthorized", {
+    name: "Unauthorized",
+    message: "Validation failed",
+    statusCode: 401,
+    details: {},
+  })
   public async list(
+    @Res() badRequestResponse: TsoaResponse<StatusCodes.BAD_REQUEST, { error: string }>,
     @Query() page?: number,
     @Query() pageSize?: number,
     @Query() crop?: string,
     @Query() state?: string,
     @Query() q?: string,
   ) {
+    if (page && page < 0) {
+      return badRequestResponse(StatusCodes.BAD_REQUEST, { error: "invalid skip value: must be greater than 0" })
+    }
+
+    if (pageSize && pageSize < 0) {
+      return badRequestResponse(StatusCodes.BAD_REQUEST, { error: "invalid limit value: must be greater than 0" })
+    }
+
     const parsed = ListQuerySchema.parse({ page, pageSize, crop, state, q });
     return this.svc.list(parsed);
   }
 
-  @Get('{id}')
+  @Get('/{id}')
+  @Tags('Get')
   @Security('jwt')
-  public async get(@Path() id: number) {
+  @SuccessResponse(201, 'Created')
+  @Response<ValidateError>("401", "Unauthorized", {
+    name: "Unauthorized",
+    message: "Validation failed",
+    statusCode: 401,
+    details: {},
+  })
+  public async get(
+    @Path() id: number,
+    @Res() badRequestResponse: TsoaResponse<StatusCodes.BAD_REQUEST, { error: string }>
+  ) {
+    if (id < 0) {
+      return badRequestResponse(StatusCodes.BAD_REQUEST, { error: "invalid parkingLot ID: must be greater than 0" })
+    }
     const q = await this.svc.get(Number(id));
     if (!q) return { message: 'Not found' };
     return q;
@@ -64,7 +149,15 @@ export class QuotesController extends Controller {
 
   @Delete('{id}')
   @Security('jwt', ['ADMIN'])
-  public async delete(@Path() id: number) {
+  @SuccessResponse(201, 'Created')
+  @Response<ValidateError>("401", "Unauthorized", {
+    name: "Unauthorized",
+    message: "Validation failed",
+    statusCode: 401,
+    details: {},
+  })
+  public async delete(
+    @Path() id: number) {
     try {
       await this.svc.delete(Number(id));
     } catch (e: any) {
@@ -73,11 +166,15 @@ export class QuotesController extends Controller {
     return null;
   }
 
-  @Get('export.csv')
+  @Get('/export/csv')
   @Security('jwt')
-  public async exportCSV(): Promise<void> {
+  public async exportCSV(
+    @Request() req: expressReq
+  ): Promise<void> {
     // @ts-ignore
-    const res: ExResponse = (this as any).response;
+
+    console.log(req)
+    const res: expressRes = req.res as any;
     const { prisma } = await import('../../database/prisma/client');
     const rows = await prisma.quote.findMany({ orderBy: { createdAt: 'desc' } });
     res.setHeader('Content-Type', 'text/csv');
@@ -97,25 +194,32 @@ export class QuotesController extends Controller {
       sanitizeCsvCell(r.createdAt.toISOString()),
     ]));
     stringifier.end();
+    return
   }
 
-  @Get('export.pdf')
+  @Get('/export/pdf')
   @Security('jwt')
-  public async exportPDF(): Promise<void> {
+  public async exportPDF(
+    @Request() req: expressReq
+  ): Promise<NodeJS.ReadableStream> {
     // @ts-ignore
-    const res: ExResponse = (this as any).response;
+    const res: expressRes = req.res as any;
+
+    let stream = new PassThrough()
     const { prisma } = await import('../../database/prisma/client');
     const rows = await prisma.quote.findMany({ orderBy: { createdAt: 'desc' } });
 
     const doc = new PDFDocument({ margin: 36, size: 'A4' });
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename="quotes.pdf"');
-    doc.pipe(res);
+    doc.pipe(stream);
     doc.fontSize(16).text('Quotes Report', { align: 'center' });
     doc.moveDown();
     rows.forEach((r: any) => {
       doc.fontSize(11).text(`${r.id} - ${r.clientName} - ${r.crop} - ${r.state} - ${r.areaHa} ha - $${r.insuredAmount}`);
     });
     doc.end();
+    
+    return stream
   }
 }

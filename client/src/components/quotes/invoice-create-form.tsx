@@ -16,8 +16,12 @@ import InputAdornment from '@mui/material/InputAdornment';
 import InputLabel from '@mui/material/InputLabel';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
+
 import Grid from '@mui/material/Grid';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { PlusCircleIcon } from '@phosphor-icons/react/dist/ssr/PlusCircle';
@@ -30,6 +34,9 @@ import { dayjs } from '../../libs/dayjs';
 // import { logger } from '@/lib/default-logger';
 import { Option } from '../core/option';
 import { toast } from '../toaster';
+import { useState, useCallback } from 'react';
+
+import Map from 'react-map-gl/mapbox';
 
 import { quotingsystem, _36_Enums_Crop, _36_Enums_MxState } from '../../api/quotingsystem'
 
@@ -61,14 +68,27 @@ const defaultValues = {
   validTo: new Date(),
 } satisfies Values;
 
+import { STORAGE_KEY } from '../../contexts/auth/jwt-context'
+import DrawControl from '../../draw-control';
+import ControlPanel from '../../control-panel';
+
+
+const TOKEN = 'pk.eyJ1IjoidmljdG9yYmFycmVyYSIsImEiOiJjajF3cHhpNjUwMDZhMzJxeW10NXkyaGxlIn0.fgu5_rHg0wj2L5vHbEfmpw'; // Set your mapbox token here
+
+
+
 export function InvoiceCreateForm({
   submit
 }: any): React.JSX.Element {
   const router = useRouter();
-
+  const accessToken = globalThis.localStorage.getItem(STORAGE_KEY);
   let priceStockClient = new quotingsystem(
+
     {
-      BASE: 'http://localhost:3000'
+      BASE: 'http://localhost:3000',
+      HEADERS: {
+        "Authorization": `Bearer ${accessToken}`
+      }
     }
   )
 
@@ -99,26 +119,44 @@ export function InvoiceCreateForm({
     [router]
   );
 
-  // const handleAddLineItem = React.useCallback(() => {
-  //   const lineItems = getValues('lineItems');
+  const [features, setFeatures] = useState({});
 
-  //   setValue('lineItems', [
-  //     ...lineItems,
-  //     { id: `LI-${lineItems.length + 1}`, description: '', service: '', quantity: 1, unitPrice: 0 },
-  //   ]);
-  // }, [getValues, setValue]);
+  const onUpdate = useCallback((e: any) => {
+    setFeatures(currFeatures => {
+      const newFeatures: any = { ...currFeatures };
+      for (const f of e.features) {
+        newFeatures[f.id] = f;
+      }
+      return newFeatures;
+    });
+  }, []);
 
-  // const handleRemoveLineItem = React.useCallback(
-  //   (lineItemId: string) => {
-  //     const lineItems = getValues('lineItems');
+  const onDelete = useCallback((e: any) => {
+    setFeatures(currFeatures => {
+      const newFeatures: any = { ...currFeatures };
+      for (const f of e.features) {
+        delete newFeatures[f.id];
+      }
+      return newFeatures;
+    });
+  }, []);
 
-  //     setValue(
-  //       'lineItems',
-  //       lineItems.filter((lineItem) => lineItem.id !== lineItemId)
-  //     );
-  //   },
-  //   [getValues, setValue]
-  // );
+  const cropOptions = [
+    { label: 'MAIZ', value: 1 },
+    { label: 'TRIGO', id: 2 },
+    { label: 'SORGO', id: 3 },
+    { label: 'CAFE', id: 4 },
+    { label: 'AGAVE', id: 5 },
+  ];
+
+  const stateOptions = [
+    { label: 'JALISCO', id: 1 },
+    { label: 'MICHOACAN', id: 2 },
+    { label: 'SINALOA', id: 3 },
+    { label: 'CHIHUAHUA', id: 4 },
+    { label: 'SONORA', id: 5 },
+
+  ];
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -140,6 +178,86 @@ export function InvoiceCreateForm({
                     )}
                   />
                 </Grid>
+
+                <Grid size={{ md: 6, xs: 12 }}>
+                  <Controller
+                    control={control}
+                    name="crop"
+                    render={({ field }) => (
+                      <FormControl error={Boolean(errors.state)} fullWidth>
+                        <InputLabel>Crop</InputLabel>
+                        <Select
+                          {...field}
+                        >
+                          <MenuItem value={'MAIZ'}>MAIZ</MenuItem>
+                          <MenuItem value={'TRIGO'}>TRIGO</MenuItem>
+                          <MenuItem value={'SORGO'}>SORGO</MenuItem>
+                          <MenuItem value={'CAFE'}>CAFE</MenuItem>
+                          <MenuItem value={'AGAVE'}>AGAVE</MenuItem>
+                        </Select>
+                      </FormControl>
+                    )}
+                  />
+                </Grid>
+
+
+                <Grid size={{ md: 6, xs: 12 }} >
+                  <Controller
+                    control={control}
+                    name="insuredAmount"
+                    render={({ field }) => (
+                      <FormControl error={Boolean(errors.insuredAmount)} fullWidth>
+                        <InputLabel>Insured Amount</InputLabel>
+                        <OutlinedInput
+                          {...field}
+                          inputProps={{ step: 1 }}
+                          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                            const value = event.target.valueAsNumber;
+
+                            if (isNaN(value)) {
+                              field.onChange('');
+                              return;
+                            }
+
+                            field.onChange(parseFloat(value.toFixed(2)));
+                          }}
+                          startAdornment={<InputAdornment position="start">$</InputAdornment>}
+                          type="number"
+                        />
+                        {errors.insuredAmount ? <FormHelperText>{errors.insuredAmount.message}</FormHelperText> : null}
+                      </FormControl>
+                    )}
+                  />
+                </Grid>
+
+                <Grid size={{ md: 6, xs: 12 }}>
+                  <Controller
+                    control={control}
+                    name="state"
+                    render={({ field: { onChange, onBlur, value, ref }, fieldState: { error } }) => (
+                      <FormControl error={Boolean(errors.state)} fullWidth>
+
+                        <Autocomplete
+                          disablePortal
+                          options={stateOptions}
+                          getOptionLabel={(option) => option.label}
+                          onChange={(event, newValue) => onChange(newValue ? newValue.label : null)} // Update RHF value
+                          value={stateOptions.find(option => option.label === value) || null} // Display selected value
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="State"
+                              inputRef={ref} // Connect ref to RHF
+                              error={!!error}
+                              helperText={error ? error.message : null}
+                            />
+                          )}
+                        />
+                      </FormControl>
+                    )}
+                  />
+                </Grid>
+
                 <Grid size={{ md: 6, xs: 12 }} >
 
                   <Controller
@@ -148,10 +266,10 @@ export function InvoiceCreateForm({
                     render={({ field }) => (
                       <DatePicker
                         {...field}
-                        format="MMM D, YYYY"
-                        label="Issue date"
+                        format="MMM d, yyyy"
+                        label="valid From"
                         onChange={(date) => {
-                          field.onChange((date as any)?.toDate());
+                          field.onChange(dayjs(date).toDate());
                         }}
                         slotProps={{
                           textField: {
@@ -165,6 +283,7 @@ export function InvoiceCreateForm({
                     )}
                   />
                 </Grid>
+
                 <Grid size={{ md: 6, xs: 12 }}>
                   <Controller
                     control={control}
@@ -172,10 +291,11 @@ export function InvoiceCreateForm({
                     render={({ field }) => (
                       <DatePicker
                         {...field}
-                        format="MMM D, YYYY"
-                        label="Due date"
+                        defaultValue={new Date()}
+                        format="MMM d, yyyy"
+                        label="valid To"
                         onChange={(date) => {
-                          field.onChange((date as any)?.toDate());
+                          field.onChange(dayjs(date).toDate());
                         }}
                         slotProps={{
                           textField: {
@@ -189,155 +309,43 @@ export function InvoiceCreateForm({
                     )}
                   />
                 </Grid>
-                {/* <Grid md={6} xs={12}>
-                  <Controller
-                    control={control}
-                    name="taxId"
-                    render={({ field }) => (
-                      <FormControl error={Boolean(errors.taxId)} fullWidth>
-                        <InputLabel>Tax ID</InputLabel>
-                        <OutlinedInput {...field} placeholder="e.g EU372054390" />
-                        {errors.taxId ? <FormHelperText>{errors.taxId.message}</FormHelperText> : null}
-                      </FormControl>
-                    )}
-                  />
-                </Grid> */}
+
               </Grid>
             </Stack>
-            {/* <Grid container spacing={3}>
-              <Grid md={4} xs={12}>
-                <Controller
-                  control={control}
-                  name="discount"
-                  render={({ field }) => (
-                    <FormControl error={Boolean(errors.discount)} fullWidth>
-                      <InputLabel>Discount</InputLabel>
-                      <OutlinedInput
-                        {...field}
-                        inputProps={{ step: 0.01 }}
-                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                          const value = event.target.valueAsNumber;
+          </Stack>
+          <Stack style={{ height: 450 }}>
+            <Map
+              style={{ height: '100%' }}
+              initialViewState={{
+                longitude: -91.874,
+                latitude: 42.76,
+                zoom: 12,
 
-                          if (isNaN(value)) {
-                            field.onChange('');
-                            return;
-                          }
+              }}
+              mapStyle="mapbox://styles/mapbox/satellite-v9"
+              mapboxAccessToken={TOKEN}
+            >
+              <DrawControl
+                position="top-left"
+                displayControlsDefault={false}
+                controls={{
+                  polygon: true,
+                  trash: true
+                }}
+                defaultMode="draw_polygon"
+                onCreate={onUpdate}
+                onUpdate={onUpdate}
+                onDelete={onDelete}
+              />
+            </Map>
+            <ControlPanel polygons={Object.values(features)} />
 
-                          field.onChange(parseFloat(value.toFixed(2)));
-                        }}
-                        startAdornment={<InputAdornment position="start">$</InputAdornment>}
-                        type="number"
-                      />
-                      {errors.discount ? <FormHelperText>{errors.discount.message}</FormHelperText> : null}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
-              <Grid md={4} xs={12}>
-                <Controller
-                  control={control}
-                  name="shippingRate"
-                  render={({ field }) => (
-                    <FormControl error={Boolean(errors.shippingRate)} fullWidth>
-                      <InputLabel>Shipping rate</InputLabel>
-                      <OutlinedInput
-                        {...field}
-                        inputProps={{ step: 0.01 }}
-                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                          const value = event.target.valueAsNumber;
-
-                          if (isNaN(value)) {
-                            field.onChange('');
-                            return;
-                          }
-
-                          field.onChange(parseFloat(value.toFixed(2)));
-                        }}
-                        startAdornment={<InputAdornment position="start">$</InputAdornment>}
-                        type="number"
-                      />
-                      {errors.shippingRate ? <FormHelperText>{errors.shippingRate.message}</FormHelperText> : null}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
-              <Grid md={4} xs={12}>
-                <Controller
-                  control={control}
-                  name="taxRate"
-                  render={({ field }) => (
-                    <FormControl error={Boolean(errors.taxRate)} fullWidth>
-                      <InputLabel>Tax rate (%)</InputLabel>
-                      <OutlinedInput
-                        {...field}
-                        inputProps={{ step: 0.01 }}
-                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                          const value = event.target.valueAsNumber;
-
-                          if (isNaN(value)) {
-                            field.onChange('');
-                            return;
-                          }
-
-                          if (value > 100) {
-                            field.onChange(100);
-                            return;
-                          }
-
-                          field.onChange(parseFloat(value.toFixed(2)));
-                        }}
-                        type="number"
-                      />
-                      {errors.taxRate ? <FormHelperText>{errors.taxRate.message}</FormHelperText> : null}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
-            </Grid> */}
-            {/* <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <Stack spacing={2} sx={{ width: '300px', maxWidth: '100%' }}>
-                <Stack direction="row" spacing={3} sx={{ justifyContent: 'space-between' }}>
-                  <Typography variant="body2">Subtotal</Typography>
-                  <Typography variant="body2">
-                    {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(subtotal)}
-                  </Typography>
-                </Stack>
-                <Stack direction="row" spacing={3} sx={{ justifyContent: 'space-between' }}>
-                  <Typography variant="body2">Discount</Typography>
-                  <Typography variant="body2">
-                    {discount
-                      ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(discount)
-                      : '-'}
-                  </Typography>
-                </Stack>
-                <Stack direction="row" spacing={3} sx={{ justifyContent: 'space-between' }}>
-                  <Typography variant="body2">Shipping</Typography>
-                  <Typography variant="body2">
-                    {shippingRate
-                      ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(shippingRate)
-                      : '-'}
-                  </Typography>
-                </Stack>
-                <Stack direction="row" spacing={3} sx={{ justifyContent: 'space-between' }}>
-                  <Typography variant="body2">Taxes</Typography>
-                  <Typography variant="body2">
-                    {tax ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(tax) : '-'}
-                  </Typography>
-                </Stack>
-                <Stack direction="row" spacing={3} sx={{ justifyContent: 'space-between' }}>
-                  <Typography variant="subtitle1">Total</Typography>
-                  <Typography variant="subtitle1">
-                    {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(total)}
-                  </Typography>
-                </Stack>
-              </Stack>
-            </Box> */}
           </Stack>
         </CardContent>
         <CardActions sx={{ justifyContent: 'flex-end' }}>
           <Button color="secondary">Cancel</Button>
           <Button type="submit" variant="contained">
-            Create Process
+            Create Quote
           </Button>
         </CardActions>
       </Card>
