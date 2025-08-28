@@ -105,7 +105,7 @@ export function InvoiceCreateForm({
     async (_: Values): Promise<void> => {
       try {
 
-        let createReq = await priceStockClient.quotes.create(getValues())
+        let createReq = await priceStockClient.quotes.create(getValues() as any)
         submit(createReq)
         // Make API request
         toast.success('Invoice created');
